@@ -44,12 +44,16 @@ export function useTagsState(): TagsState {
   debugger;
 
   const tags = data ? data.allTags.Tags : [];
-  const tagHash = useMemo(() => {
-    debugger;
-    return tags && tags.length ? tags.reduce((hash, t) => ((hash[t._id] = t), hash), {}) : {};
+  return useMemo(() => {
+    return {
+      tags,
+      tagHash: tags && tags.length ? tags.reduce((hash, t) => ((hash[t._id] = t), hash), {}) : {},
+      tagsLoaded : loaded
+    };
+    //return tags && tags.length ? tags.reduce((hash, t) => ((hash[t._id] = t), hash), {}) : {};
   }, [tags]);
 
-  return { tagsLoaded: loaded, tags, tagHash };
+  //return { tagsLoaded: loaded, tags, tagHash };
 }
 
 const tagsSort = ({ name: name1 }, { name: name2 }) => {

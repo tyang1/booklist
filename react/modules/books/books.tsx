@@ -162,9 +162,9 @@ const RenderModule: SFC<{}> = ({}) => {
 
   return (
     <div className="standard-module-container margin-bottom-lg">
-      <Suspense fallback={<Fallback uiView={uiView} {...lastBookResults} />}>
+      {/* <Suspense fallback={<Fallback uiView={uiView} {...lastBookResults} />}> */}
         <MainContent uiView={uiView} setLastBookResults={setLastBookResults} />
-      </Suspense>
+      {/* </Suspense> */}
     </div>
   );
 };

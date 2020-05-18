@@ -2,7 +2,7 @@ import React, { createContext, useContext, FunctionComponent, useEffect, Suspens
 const { unstable_useTransition: useTransition } = React as any;
 
 import ReactDOM from "react-dom";
-const { unstable_createRoot: createRoot } = ReactDOM as any;
+const { unstable_createRoot: createRoot, render } = ReactDOM as any;
 
 import MainNavigationBar from "app/components/mainNavigation";
 import { useAppState, AppState, URL_SYNC, getCurrentModuleFromUrl } from "./state/appState";
@@ -40,7 +40,8 @@ const WellUiSwitcher: FunctionComponent<{}> = () => {
 };
 
 export function renderUI() {
-  createRoot(document.getElementById("home")).render(<App />);
+  render(<App />, document.getElementById("home"));
+  //createRoot(document.getElementById("home")).render(<App />);
 }
 
 export const AppContext = createContext<[AppState, any, any]>(null);
@@ -49,17 +50,17 @@ export const ModuleUpdateContext = createContext<boolean>(false);
 const App = () => {
   const suspenseTimeoutValue = parseInt(localStorage.getItem("suspense-timeout"));
   const timeoutMs = isNaN(suspenseTimeoutValue) ? 3000 : suspenseTimeoutValue;
-  const [startTransitionNewModule, isNewModulePending] = useTransition({ timeoutMs });
-  const [startTransitionModuleUpdate, moduleUpdatePending] = useTransition({ timeoutMs });
+  //const [startTransitionNewModule, isNewModulePending] = useTransition({ timeoutMs });
+  //const [startTransitionModuleUpdate, moduleUpdatePending] = useTransition({ timeoutMs });
   let appStatePacket = useAppState();
   let [appState, appActions, dispatch] = appStatePacket;
 
   let Component = getModuleComponent(appState.module) as any;
 
   useEffect(() => {
-    startTransitionNewModule(() => {
+    //startTransitionNewModule(() => {
       dispatch({ type: URL_SYNC });
-    });
+    //});
   }, []);
   useEffect(() => {
     return history.listen(location => {
@@ -72,13 +73,13 @@ const App = () => {
       }
 
       if (appState.module != getCurrentModuleFromUrl()) {
-        startTransitionNewModule(() => {
+        //startTransitionNewModule(() => {
           dispatch({ type: URL_SYNC });
-        });
+        //});
       } else {
-        startTransitionModuleUpdate(() => {
+        //startTransitionModuleUpdate(() => {
           dispatch({ type: URL_SYNC });
-        });
+        //});
       }
     });
   }, [appState.module]);
@@ -90,15 +91,15 @@ const App = () => {
 
   return (
     <AppContext.Provider value={appStatePacket}>
-      <ModuleUpdateContext.Provider value={moduleUpdatePending}>
+      <ModuleUpdateContext.Provider value={false}>
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100vh", margin: "auto" }}>
           <MobileMeta />
           <MainNavigationBar />
 
-          {isNewModulePending ? <Loading /> : null}
+          {/* {isNewModulePending ? <Loading /> : null} */}
           <Suspense fallback={<LongLoading />}>
             <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
-              {Component ? <Component updating={moduleUpdatePending} /> : null}
+              {Component ? <Component updating={false} /> : null}
             </div>
           </Suspense>
 
