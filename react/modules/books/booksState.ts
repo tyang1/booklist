@@ -87,9 +87,14 @@ export const useBooks = () => {
   const { data, loaded, currentQuery } = useSuspenseQuery<QueryOf<Queries["allBooks"]>>(
     buildQuery(GetBooksQuery, variables, { onMutation: onBooksMutation })
   );
+  
+  let { subjectHash, subjectsLoaded } = useSubjectsState();
+  let { tagHash, tagsLoaded } = useTagsState();
+
+  debugger;
 
   const booksRaw = data ? data.allBooks.Books : null;
-  const books = adjustBooks(booksRaw);
+  const books = adjustBooks(booksRaw, subjectHash, subjectsLoaded, tagHash, tagsLoaded);
   const booksCount = loaded ? data?.allBooks?.Meta?.count ?? "" : "";
 
   const resultsCount = booksCount != null ? booksCount : -1;
@@ -103,12 +108,11 @@ export const useBooks = () => {
   };
 };
 
-const adjustBooks = books => {
-  let { subjectHash, subjectsLoaded } = useSubjectsState();
-  let { tagHash, tagsLoaded } = useTagsState();
-
+const adjustBooks = (books, subjectHash, subjectsLoaded, tagHash, tagsLoaded) => {
   return useMemo(() => {
     if (!subjectsLoaded || !tagsLoaded || !books) return [];
+
+    debugger;
 
     return books.map((bookRaw: IBookDisplay) => {
       let result = { ...bookRaw };
