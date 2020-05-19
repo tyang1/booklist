@@ -177,6 +177,10 @@ const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = 
 
   console.log("HURR DURR NEW BOOKS", books);
 
+  useEffect(() => {
+    console.log("BOOKS CHANGED");
+  }, [books]);
+
   // TODO: useEffect pending https://github.com/facebook/react/issues/17911#issuecomment-581969701
   //useLayoutEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);
   useEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);

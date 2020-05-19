@@ -62,7 +62,8 @@ window.addEventListener("book-scanned", () => graphqlClient.getCache(GetBooksQue
 
 export const useBooks = () => {
   const searchState = useCurrentSearch();
-  const variables = useMemo(() => computeBookSearchVariables(searchState), [searchState]);
+  const variables = computeBookSearchVariables(searchState);
+  // const variables = useMemo(() => computeBookSearchVariables(searchState), [searchState]);
   console.log("NEW VARIABLES", variables);
   const onBooksMutation = [
     {
@@ -112,6 +113,7 @@ const adjustBooks = books => {
 
   return useMemo(() => {
     if (!subjectsLoaded || !tagsLoaded || !books) return [];
+    console.log("ADJUST BOOKS")
 
     return books.map((bookRaw: IBookDisplay) => {
       let result = { ...bookRaw };

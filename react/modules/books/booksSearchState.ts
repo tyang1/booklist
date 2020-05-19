@@ -1,6 +1,6 @@
 import shallowEqual from "shallow-equal/objects";
 
-import { useMemo, useReducer, useContext, useEffect } from "react";
+import { useMemo, useReducer, useContext, useEffect, useState } from "react";
 import { useTagsState } from "app/state/tagsState";
 
 import { defaultSearchValuesHash, filtersFromUrl } from "./booksLoadingUtils";
@@ -33,9 +33,13 @@ export type LookupHashType = {
 };
 
 export function useBooksSearchState(): [BookSearchState] {
-  let [appState] = useContext(AppContext);
-  let initialSearchState = useMemo(() => ({ ...bookSearchInitialState, hashFilters: appState.urlState.searchState }), []);
-  let [result, dispatch] = useReducer(bookSearchReducer, initialSearchState);
+  const [appState] = useContext(AppContext);
+  const [searchState, setSearchState] = useState(appState.urlState.searchState);
+  useEffect(() => {
+    setSearchState(appState.urlState.searchState);
+  }, [appState.urlState.searchState])
+  //let initialSearchState = useMemo(() => ({ ...bookSearchInitialState, hashFilters: appState.urlState.searchState }), []);
+  //let [result, dispatch] = useReducer(bookSearchReducer, initialSearchState);
 
   // useEffect(() => {
   //   if (appState.module == "books" || appState.module == "view") {
@@ -46,7 +50,7 @@ export function useBooksSearchState(): [BookSearchState] {
   // if (!shallowEqual(appState.urlState.searchState, result.hashFilters) && (appState.module == "books" || appState.module == "view")) {
   // }
 
-  return [{ hashFilters: appState.urlState.searchState }];
+  return [{ hashFilters: searchState }];
 }
 
 export const useSelectedSubjects = () => {
