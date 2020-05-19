@@ -170,8 +170,12 @@ const RenderModule: SFC<{}> = ({}) => {
 };
 
 const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = ({ uiView, setLastBookResults }) => {
-  const { books, totalPages, resultsCount, currentQuery } = useBooks();
+  let { books, totalPages, resultsCount, currentQuery } = useBooks();
   const { dispatchBooksUiState } = useContext(BooksModuleContext);
+
+  books = books && books.concat ? books.concat() : books;
+
+  console.log("HURR DURR NEW BOOKS", books);
 
   // TODO: useEffect pending https://github.com/facebook/react/issues/17911#issuecomment-581969701
   //useLayoutEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);
@@ -187,7 +191,7 @@ const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = 
     <>
       <BooksMenuBar uiDispatch={uiDispatch} uiView={uiView} bookResultsPacket={{ books, totalPages, resultsCount }} />
       <div style={{ flex: 1, padding: 0, minHeight: 450 }}>
-        <BookResults {...{ books, uiView }} />
+        <BookResults books={books} uiView={uiView} />
       </div>
     </>
   );
@@ -195,6 +199,8 @@ const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = 
 
 const BookResults: SFC<{ books: any; uiView: any }> = ({ books, uiView }) => {
   const isUpdating = useContext(ModuleUpdateContext);
+
+  console.log("BOOKRESULTS", books);
 
   return (
     <>

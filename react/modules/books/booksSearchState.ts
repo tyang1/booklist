@@ -1,6 +1,6 @@
 import shallowEqual from "shallow-equal/objects";
 
-import { useMemo, useReducer, useContext } from "react";
+import { useMemo, useReducer, useContext, useEffect } from "react";
 import { useTagsState } from "app/state/tagsState";
 
 import { defaultSearchValuesHash, filtersFromUrl } from "./booksLoadingUtils";
@@ -16,9 +16,9 @@ export function bookSearchReducer(state = bookSearchInitialState, action): BookS
   switch (action.type) {
     case "SYNC_HASH":
       let { filters } = action;
-      if (!shallowEqual(filters, state.hashFilters)) {
-        return { ...state, hashFilters: filters };
-      }
+      //if (!shallowEqual(filters, state.hashFilters)) {
+      return { ...state, hashFilters: filters };
+      //}
       return state;
   }
   return state;
@@ -32,16 +32,21 @@ export type LookupHashType = {
   [str: string]: TagOrSubject;
 };
 
-export function useBooksSearchState(): [BookSearchState, any] {
+export function useBooksSearchState(): [BookSearchState] {
   let [appState] = useContext(AppContext);
   let initialSearchState = useMemo(() => ({ ...bookSearchInitialState, hashFilters: appState.urlState.searchState }), []);
   let [result, dispatch] = useReducer(bookSearchReducer, initialSearchState);
 
-  if (!shallowEqual(appState.urlState.searchState, result.hashFilters) && (appState.module == "books" || appState.module == "view")) {
-    dispatch({ type: "SYNC_HASH", filters: appState.urlState.searchState });
-  }
+  // useEffect(() => {
+  //   if (appState.module == "books" || appState.module == "view") {
+  //     dispatch({ type: "SYNC_HASH", filters: appState.urlState.searchState });
+  //   }
+  // }, [appState.urlState.searchState, appState.module]);
 
-  return [result, dispatch];
+  // if (!shallowEqual(appState.urlState.searchState, result.hashFilters) && (appState.module == "books" || appState.module == "view")) {
+  // }
+
+  return [{ hashFilters: appState.urlState.searchState }];
 }
 
 export const useSelectedSubjects = () => {

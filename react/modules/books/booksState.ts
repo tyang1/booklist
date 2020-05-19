@@ -63,6 +63,7 @@ window.addEventListener("book-scanned", () => graphqlClient.getCache(GetBooksQue
 export const useBooks = () => {
   const searchState = useCurrentSearch();
   const variables = useMemo(() => computeBookSearchVariables(searchState), [searchState]);
+  console.log("NEW VARIABLES", variables);
   const onBooksMutation = [
     {
       when: /updateBooks?/,
@@ -85,7 +86,7 @@ export const useBooks = () => {
     }
   ];
   const { data, loaded, currentQuery } = useSuspenseQuery<QueryOf<Queries["allBooks"]>>(
-    buildQuery(GetBooksQuery, variables, { onMutation: onBooksMutation })
+    buildQuery(GetBooksQuery, variables, { active: true, onMutation: onBooksMutation })
   );
 
   const booksRaw = data ? data.allBooks.Books : null;
@@ -94,6 +95,8 @@ export const useBooks = () => {
 
   const resultsCount = booksCount != null ? booksCount : -1;
   const totalPages = useMemo(() => (resultsCount && resultsCount > 0 ? Math.ceil(resultsCount / searchState.pageSize) : 0), [resultsCount]);
+
+  console.log("NEW BOOKS", booksRaw, books, currentQuery, booksCount);
 
   return {
     currentQuery,
