@@ -1,4 +1,6 @@
-import React, { SFC, Suspense, useEffect, useLayoutEffect, useReducer, useContext, createContext, useState } from "react";
+import React, { SFC, Suspense, useEffect, useLayoutEffect, useReducer, useContext, createContext, useState, useRef } from "react";
+
+const { unstable_useTransition: useTransition } = React as any;
 
 import BooksMenuBar, { BooksMenuBarDisabled } from "./components/booksMenuBar";
 import Loading from "app/components/loading";
@@ -10,7 +12,7 @@ import BasicListView from "./components/bookViews/basicList";
 import CoversView from "./components/bookViews/coversList";
 
 import { useBooks } from "./booksState";
-import { useMutation, buildMutation } from "micro-graphql-react";
+import { useMutation, buildMutation, useSuspenseQuery, buildQuery } from "micro-graphql-react";
 import { useCodeSplitModal } from "./util";
 
 import UpdateBookMutation from "graphQL/books/updateBook.graphql";
@@ -19,6 +21,8 @@ import DeleteBookMutation from "graphQL/books/deleteBook.graphql";
 import { MutationOf, Mutations } from "graphql-typings";
 import { useBookSearchUiView, BookSearchUiView } from "./booksUiState";
 import { ModuleUpdateContext } from "app/renderUI";
+
+import GetBooksQuery from "graphQL/books/getBooks.graphql";
 
 const CreateBookModal = LazyModal(() => import(/* webpackChunkName: "book-view-edit-modals" */ "app/components/editBook/editModal"));
 const BookSubjectSetter = LazyModal(() => import(/* webpackChunkName: "book-list-modals" */ "./components/bookSubjectSetter"));
@@ -33,6 +37,31 @@ const prepBookForSaving = book => {
   book.pages = isNaN(pages) ? void 0 : pages;
 
   return propsToUpdate.reduce((obj, prop) => ((obj[prop] = book[prop]), obj), {});
+};
+
+const useSuspense = () => {
+  const active = useRef<any>(false);
+  const [_, refresh] = useReducer(x => x + 1, 0);
+
+  if (active.current === true) {
+    const P = new Promise(res => {
+      setTimeout(() => {
+        active.current = null;
+        res();
+      }, 4000);
+    });
+    active.current = P;
+  }
+  if (active.current) {
+    throw active.current;
+  }
+
+  return [
+    () => {
+      active.current = true;
+      refresh();
+    }
+  ];
 };
 
 export type BooksModuleActions = {
@@ -157,39 +186,85 @@ const Fallback: SFC<{ uiView: BookSearchUiView; totalPages: number; resultsCount
 };
 
 const RenderModule: SFC<{}> = ({}) => {
-  const uiView = useBookSearchUiView();
+  //const uiView = useBookSearchUiView();
   const [lastBookResults, setLastBookResults] = useState({ totalPages: 0, resultsCount: 0 });
 
   return (
     <div className="standard-module-container margin-bottom-lg">
-      <Suspense fallback={<Fallback uiView={uiView} {...lastBookResults} />}>
-        <MainContent uiView={uiView} setLastBookResults={setLastBookResults} />
+      <Suspense fallback={<h1></h1>}>
+        <MainContent />
       </Suspense>
     </div>
   );
 };
 
-const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = ({ uiView, setLastBookResults }) => {
-  const { books, totalPages, resultsCount, currentQuery } = useBooks();
-  const { dispatchBooksUiState } = useContext(BooksModuleContext);
+const MainContent: SFC<{}> = ({}) => {
+  //const { books, totalPages, resultsCount, currentQuery } = useBooks();
+  //const { dispatchBooksUiState } = useContext(BooksModuleContext);
 
   // TODO: useEffect pending https://github.com/facebook/react/issues/17911#issuecomment-581969701
   //useLayoutEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);
-  useEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);
+  //useEffect(() => dispatchBooksUiState(["reset"]), [currentQuery]);
 
-  useEffect(() => {
-    setLastBookResults({ resultsCount, totalPages });
-  }, [resultsCount, totalPages]);
+  // useEffect(() => {
+  //   setLastBookResults({ resultsCount, totalPages });
+  // }, [resultsCount, totalPages]);
 
-  const { dispatch: uiDispatch } = uiView;
+  //const { dispatch: uiDispatch } = uiView;
+
+  const [st1, l1] = useTransition({ timeoutMs: 3000 });
+  const [st2, l2] = useTransition({ timeoutMs: 3000 });
+  const [st3, l3] = useTransition({ timeoutMs: 3000 });
+
+  const [pages1, setPages1] = useState(1);
+  const [pages2, setPages2] = useState(200);
+  const [pages3, setPages3] = useState(300);
+
+  const go1 = () => {
+    st1(() => {
+      setPages1(x => x + 25);
+    });
+  };
+  const go2 = () => {
+    st2(() => {
+      setPages2(x => x + 25);
+    });
+  };
+  const go3 = () => {
+    st3(() => {
+      setPages3(x => x + 25);
+    });
+  };
+
+  console.log(l1, l2, l3);
 
   return (
-    <>
-      <BooksMenuBar uiDispatch={uiDispatch} uiView={uiView} bookResultsPacket={{ books, totalPages, resultsCount }} />
-      <div style={{ flex: 1, padding: 0, minHeight: 450 }}>
-        <BookResults {...{ books, uiView }} />
-      </div>
-    </>
+    <div>
+      {l1 || l2 || l3 ? <Loading /> : null}
+      <button onClick={go1}>Bump 1</button>
+      <button onClick={go2}>Bump 1</button>
+      <button onClick={go3}>Bump 1</button>
+      <TempQuery pages={pages1} />
+      <hr />
+      <TempQuery pages={pages2} />
+      <hr />
+      <TempQuery pages={pages3} />
+    </div>
+  );
+};
+
+const TempQuery = ({ pages }) => {
+
+  const { data } = useSuspenseQuery(buildQuery(GetBooksQuery, { pages_gt: pages }));
+
+  const books = data?.allBooks?.Books ?? [];
+
+  return (
+    <div>
+      {books.map(b => (
+        <div key={b._id}>{b.title}</div>
+      ))}
+    </div>
   );
 };
 
