@@ -44,7 +44,7 @@ export function renderUI() {
 }
 
 export const AppContext = createContext<[AppState, any, any]>(null);
-export const ModuleUpdateContext = createContext<boolean>(false);
+export const ModuleUpdateContext = createContext<any>(false);
 
 const App = () => {
   const suspenseTimeoutValue = parseInt(localStorage.getItem("suspense-timeout"));
@@ -90,7 +90,7 @@ const App = () => {
 
   return (
     <AppContext.Provider value={appStatePacket}>
-      <ModuleUpdateContext.Provider value={moduleUpdatePending}>
+      <ModuleUpdateContext.Provider value={{startTransitionModuleUpdate, moduleUpdatePending}}>
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100vh", margin: "auto" }}>
           <MobileMeta />
           <MainNavigationBar />

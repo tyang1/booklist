@@ -170,7 +170,7 @@ const RenderModule: SFC<{}> = ({}) => {
 };
 
 const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = ({ uiView, setLastBookResults }) => {
-  const { books, totalPages, resultsCount, currentQuery } = useBooks();
+  const { books, totalPages, resultsCount, currentQuery, pending } = useBooks();
   const { dispatchBooksUiState } = useContext(BooksModuleContext);
 
   // TODO: useEffect pending https://github.com/facebook/react/issues/17911#issuecomment-581969701
@@ -187,14 +187,14 @@ const MainContent: SFC<{ uiView: BookSearchUiView; setLastBookResults: any }> = 
     <>
       <BooksMenuBar uiDispatch={uiDispatch} uiView={uiView} bookResultsPacket={{ books, totalPages, resultsCount }} />
       <div style={{ flex: 1, padding: 0, minHeight: 450 }}>
-        <BookResults {...{ books, uiView }} />
+        <BookResults {...{ books, uiView, pending }} />
       </div>
     </>
   );
 };
 
-const BookResults: SFC<{ books: any; uiView: any }> = ({ books, uiView }) => {
-  const isUpdating = useContext(ModuleUpdateContext);
+const BookResults: SFC<{ books: any; uiView: any, pending: any }> = ({ books, uiView, pending }) => {
+  const { startTransitionModuleUpdate, moduleUpdatePending: isUpdating } = useContext(ModuleUpdateContext);
 
   return (
     <>
@@ -204,7 +204,7 @@ const BookResults: SFC<{ books: any; uiView: any }> = ({ books, uiView }) => {
         </div>
       ) : null}
 
-      {isUpdating ? <Loading /> : null}
+      {isUpdating || pending ? <Loading /> : null}
 
       {uiView.isGridView ? (
         <GridView books={books} />
